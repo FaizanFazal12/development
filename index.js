@@ -1,14 +1,15 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const { default: errorMiddleware } = require('./middlewares/errorMiddleware');
-const { default: router } = require('./routers');
+const  errorMiddleware  = require('./middlewares/errorMiddleware');
+const  router  = require('./routers');
+const { connectToDatabase } = require('./connect');
 const app = express();
 const port = process.env.PORT ||  3000;
 dotenv.config();
-// Middleware to parse JSON request bodies
+
+connectToDatabase();
 app.use(express.json());
 
-// Middleware to parse URL-encoded form data
 app.use(express.urlencoded({ extended: true }));
 
 // Default route
@@ -17,7 +18,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/v1',router)
-app.use(errorMiddleware());
+app.use(errorMiddleware);
 
 // Start the server
 app.listen(port, () => {

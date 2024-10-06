@@ -1,7 +1,7 @@
-const { default: authController } = require("../controllers/authController");
 const auth = require("../middlewares/auth");
+const express = require('express');
 
-const express = requie('express');
+const authController = require('../controllers/authController')
 
 const router = express.Router();
 
@@ -11,4 +11,4 @@ router.post('/login',authController.LoginUser);
 router.post('/register',authController.SignupUser);
 
   
-export default router
+module.exports = router
