@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const RefreshToken = require('../models/token');
 
 // Load environment variables
 require('dotenv').config();
@@ -67,6 +68,21 @@ const jwtService = {
       throw new Error('Unable to refresh access token, refresh token is invalid');
     }
   },
-};
+
+  storeRefreshToken: async(token, userId)=>{
+    try {
+      const newToken = new RefreshToken({
+        token: token,
+        userId: userId
+      });
+
+      // store in db
+      await newToken.save();
+    }
+    catch (error) {
+      console.log(error);
+    }
+  }
+}
 
 module.exports = jwtService;

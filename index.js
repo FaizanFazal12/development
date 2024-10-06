@@ -4,10 +4,11 @@ const  errorMiddleware  = require('./middlewares/errorMiddleware');
 const  router  = require('./routers');
 const { connectToDatabase } = require('./connect');
 const app = express();
+const cookieParser = require("cookie-parser");
 const port = process.env.PORT ||  3000;
 dotenv.config();
 
-connectToDatabase();
+app.use(cookieParser());
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
@@ -19,6 +20,9 @@ app.get('/', (req, res) => {
 
 app.use('/api/v1',router)
 app.use(errorMiddleware);
+
+
+connectToDatabase();
 
 // Start the server
 app.listen(port, () => {

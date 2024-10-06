@@ -1,22 +1,47 @@
-const jwtService = require("../services/jwtservice");
+const JWTService = require('../services/jwtservice');
+const User = require('../models/user');
 
-const auth = (req, res, next) => {
-  const token = req.cookies.accessToken; 
+const auth = async (req, res, next) => {
+    try{
+        // 1. refresh, access token validation
+    const {refreshToken, accessToken} = req?.cookies;
 
-  if (!token) {
-    return res.status(401).json({ message: 'No token provided, unauthorized' });
-  }
 
-  try {
-    const decoded = jwtService.verifyAccessToken(token);
-    if(decoded){
-      req.user = decoded; 
-      next();
+    if (!refreshToken || !accessToken){
+        const error = {
+            status: 401,
+            message: 'Unauthorized'
+        }
+
+        return next(error)
     }
-    
-  } catch (error) {
-    res.status(403).json({ message: 'Invalid token, access denied' });
-  }
-};
+
+    let _id;
+
+    try{
+        _id = JWTService.verifyAccessToken(accessToken)._id;
+    }
+    catch(error){
+        return next(error);
+    }
+
+    let user;
+
+    try{
+        user = await User.findOne({_id: _id});
+    }
+    catch(error){
+        return next(error);
+    }
+
+
+    req.user = user;
+
+    next();
+    }
+    catch(error){
+        return next(error);
+    }
+}
 
 module.exports = auth;

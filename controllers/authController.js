@@ -1,7 +1,8 @@
 const Joi = require('joi');
-const bcrypt = require('bcrypt'); // Import bcrypt for password hashing
-const User = require('../models/User'); // Import the User model
+const bcrypt = require('bcrypt');
 const jwtService = require('../services/jwtservice');
+const User = require('../models/user');
+
 const authController = {
   async LoginUser(req, res, next) {
     const { email, password } = req.body;
@@ -29,6 +30,8 @@ const authController = {
 
       const accessToken = jwtService.signAccessToken({ id: user._id, email: user.email });
       const refreshToken = jwtService.signRefreshToken({ id: user._id, email: user.email });
+
+      await jwtService.storeRefreshToken(refreshToken, user._id);
 
       res.cookie('accessToken', accessToken, { httpOnly: true });
       res.cookie('refreshToken', refreshToken, { httpOnly: true });
@@ -68,10 +71,22 @@ const authController = {
       const hashedPassword = await bcrypt.hash(password, 10); 
 
       // Create a new user object
-      const newUser = new User({ email, password: hashedPassword, name, shippingAddress });
-      await newUser.save();
+      const user = new User({ email, password: hashedPassword, name, shippingAddress });
 
-      res.status(201).json({ message: 'User registered successfully', user: { id: newUser._id, email: newUser.email } });
+      
+      await user.save();
+
+
+      const accessToken = jwtService.signAccessToken({ id: user._id, email: user.email });
+      const refreshToken = jwtService.signRefreshToken({ id: user._id, email: user.email });
+
+      await jwtService.storeRefreshToken(refreshToken, user._id);
+
+      res.cookie('accessToken', accessToken, { httpOnly: true });
+      res.cookie('refreshToken', refreshToken, { httpOnly: true });
+
+
+      res.status(201).json({ message: 'User registered successfully', user: { id: user._id, email: user.email } });
     } catch (err) {
       next(err);
     }
