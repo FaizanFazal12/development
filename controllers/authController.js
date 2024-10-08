@@ -28,8 +28,8 @@ const authController = {
         return next({ status: 401, message: 'Invalid credentials' });
       }
 
-      const accessToken = jwtService.signAccessToken({ id: user._id, email: user.email });
-      const refreshToken = jwtService.signRefreshToken({ id: user._id, email: user.email });
+      const accessToken = jwtService.signAccessToken({ _id: user._id, email: user.email });
+      const refreshToken = jwtService.signRefreshToken({ _id: user._id, email: user.email });
 
       await jwtService.storeRefreshToken(refreshToken, user._id);
 
@@ -77,16 +77,15 @@ const authController = {
       await user.save();
 
 
-      const accessToken = jwtService.signAccessToken({ id: user._id, email: user.email });
-      const refreshToken = jwtService.signRefreshToken({ id: user._id, email: user.email });
+      const accessToken = jwtService.signAccessToken({ _id: user._id, email: user.email });
+      const refreshToken = jwtService.signRefreshToken({ _id: user._id, email: user.email });
 
       await jwtService.storeRefreshToken(refreshToken, user._id);
-
       res.cookie('accessToken', accessToken, { httpOnly: true });
       res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
 
-      res.status(201).json({ message: 'User registered successfully', user: { id: user._id, email: user.email } });
+      res.status(201).json({ message: 'User registered successfully', user: { id: user._id, email: user.email ,refreshToken ,accessToken } });
     } catch (err) {
       next(err);
     }

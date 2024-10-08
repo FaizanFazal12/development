@@ -5,33 +5,28 @@ const Product = require('../models/Product');
 const cartController = {
     // Add product to cart
     async addToCart(req, res, next) {
-        // Define schema for validation using Joi
         const schema = Joi.object({
             productId: Joi.string().required(),
             quantity: Joi.number().min(1).required(),
         });
 
-        // Validate request body
         const { error } = schema.validate(req.body, { abortEarly: true });
         if (error) {
-            return next(error); // Pass the error to the next middleware
+            return next(error);
         }
 
         try {
             const userId = req.user._id;
             const { productId, quantity } = req.body;
 
-            // Validate product existence
             const product = await Product.findById(productId);
             if (!product) {
                 return res.status(404).json({ message: 'Product not found' });
             }
 
-            // Check if cart already exists for the user
             let cart = await Cart.findOne({ user: userId });
 
             if (cart) {
-                // If cart exists, check if the product is already in the cart
                 const productIndex = cart.items.findIndex(item => item.product.toString() === productId);
 
                 if (productIndex > -1) {
@@ -70,7 +65,7 @@ const cartController = {
 
             res.status(200).json(cart);
         } catch (err) {
-            next(err); // Pass any other errors to the next middleware
+            next(err); 
         }
     },
 

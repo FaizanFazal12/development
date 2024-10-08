@@ -1,5 +1,5 @@
-const Category = require('../models/Category'); 
-const Joi = require('joi');
+const Category = require("../models/Category");
+const Joi = require("joi");
 
 const categoryController = {
   // Create a new category
@@ -9,7 +9,7 @@ const categoryController = {
       description: Joi.string().optional(),
     });
 
-    const { error } = schema.validate(req.body);
+    const { error } = schema.validate(req.body, { abortEarly: true });
     if (error) {
       return next(error);
     }
@@ -19,15 +19,20 @@ const categoryController = {
 
       const existingCategory = await Category.findOne({ name });
       if (existingCategory) {
-        return res.status(400).json({ message: 'Category already exists' });
+        return res.status(400).json({ message: "Category already exists" });
       }
 
       const newCategory = new Category({ name, description });
       await newCategory.save();
 
-      res.status(201).json({ message: 'Category created successfully', category: newCategory });
+      res
+        .status(201)
+        .json({
+          message: "Category created successfully",
+          category: newCategory,
+        });
     } catch (err) {
-      next(err); 
+      next(err);
     }
   },
 
@@ -46,7 +51,7 @@ const categoryController = {
     try {
       const category = await Category.findById(req.params.id);
       if (!category) {
-        return res.status(404).json({ message: 'Category not found' });
+        return res.status(404).json({ message: "Category not found" });
       }
 
       res.status(200).json({ success: true, category });
@@ -62,7 +67,7 @@ const categoryController = {
       description: Joi.string().optional(),
     });
 
-    const { error } = schema.validate(req.body);
+    const { error } = schema.validate(req.body, { abortEarly: true });
     if (error) {
       return next(error);
     }
@@ -78,10 +83,15 @@ const categoryController = {
       );
 
       if (!updatedCategory) {
-        return res.status(404).json({ message: 'Category not found' });
+        return res.status(404).json({ message: "Category not found" });
       }
 
-      res.status(200).json({ message: 'Category updated successfully', category: updatedCategory });
+      res
+        .status(200)
+        .json({
+          message: "Category updated successfully",
+          category: updatedCategory,
+        });
     } catch (err) {
       next(err);
     }
@@ -93,10 +103,10 @@ const categoryController = {
       const deletedCategory = await Category.findByIdAndDelete(req.params.id);
 
       if (!deletedCategory) {
-        return res.status(404).json({ message: 'Category not found' });
+        return res.status(404).json({ message: "Category not found" });
       }
 
-      res.status(200).json({ message: 'Category deleted successfully' });
+      res.status(200).json({ message: "Category deleted successfully" });
     } catch (err) {
       next(err);
     }

@@ -3,8 +3,8 @@ const User = require('../models/user');
 
 const auth = async (req, res, next) => {
     try{
-        // 1. refresh, access token validation
-    const {refreshToken, accessToken} = req?.cookies;
+
+    const {refreshToken, accessToken} = req.cookies;
 
 
     if (!refreshToken || !accessToken){
@@ -20,6 +20,8 @@ const auth = async (req, res, next) => {
 
     try{
         _id = JWTService.verifyAccessToken(accessToken)._id;
+
+       
     }
     catch(error){
         return next(error);
@@ -29,12 +31,13 @@ const auth = async (req, res, next) => {
 
     try{
         user = await User.findOne({_id: _id});
+     
     }
     catch(error){
         return next(error);
     }
 
-
+    
     req.user = user;
 
     next();

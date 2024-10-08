@@ -1,32 +1,35 @@
 const Product = require('../models/Product'); 
+const Category = require('../models/Category'); 
 const Joi = require('joi');
 const objectIdPattern = /^[0-9a-fA-F]{24}$/;
-
 
 const productController = {
   // Create a new product
   async createProduct(req, res, next) {
     const schema = Joi.object({
       name: Joi.string().min(3).required(),
-      description: Joi.string().optional(),
-      image: Joi.string().optional(),
-      category: Joi.string().pattern(objectIdPattern).required()
+      price: Joi.string().required(),
+      brand: Joi.string().required(),
+      stock: Joi.string().optional(),
+      description: Joi.string().required(),
+      images: Joi.array().items(Joi.string()).optional(),
+      category: Joi.string().pattern(objectIdPattern).optional()
     });
 
-    const { error } = schema.validate(req.body ,{ abortEarly:true});
+    const { error } = schema.validate(req.body ,{ abortEarly:true} );
     if (error) {
       return next(error);
     }
 
     try {
-      const { name, description , category ,image } = req.body;
+      const { name, description , category ,image ,price  ,brand ,stock} = req.body;
 
       const existingProduct = await Product.findOne({ name });
       if (existingProduct) {
         return res.status(400).json({ message: 'Product already exists' });
       }
 
-      const newProduct = new Product({ name, description ,category ,image });
+      const newProduct = new Product({ name, description ,category ,image  ,price ,brand ,stock});
       await newProduct.save();
 
       res.status(201).json({ message: 'Product created successfully', product: newProduct });
@@ -35,10 +38,48 @@ const productController = {
     }
   },
 
-  // Get a list of all products
+  // Get a list of all products with filters, sorting, and price range
   async getAllProducts(req, res, next) {
     try {
-      const products = await Product.find();
+      const { brand, category, minPrice, maxPrice, stock, sort, sortDirection } = req.query;
+      
+      // Create a filter object based on the query parameters
+      let filter = {};
+
+      // Filtering logic
+      if (brand) {
+        filter.brand = brand;
+      }
+
+      if (category) {
+
+        let findCategory= await Category.findOne({ name:category} );
+        if(findCategory){
+
+          filter.category = findCategory._id;
+        }
+      }
+
+      if (minPrice || maxPrice) {
+        filter.price = {};
+        if (minPrice) filter.price.$gte = Number(minPrice);
+        if (maxPrice) filter.price.$lte = Number(maxPrice);
+      }
+
+      if (stock) {
+        filter.stock = stock;
+      }
+
+      // Default sort criteria
+      let sortCriteria = {};
+      if (sort) {
+        const direction = sortDirection === 'desc' ? -1 : 1;
+        sortCriteria[sort] = direction;
+      }
+
+      // Fetch products with the filter and sorting applied
+      const products = await Product.find(filter).sort(sortCriteria);
+
       res.status(200).json({ success: true, products });
     } catch (err) {
       next(err);
@@ -63,10 +104,12 @@ const productController = {
   async updateProduct(req, res, next) {
     const schema = Joi.object({
       name: Joi.string().min(3).optional(),
+      price: Joi.string().optional(),
+      brand: Joi.string().optional(),
+      stock: Joi.string().optional(),
       description: Joi.string().optional(),
-      image: Joi.string().optional(),
+      images: Joi.array().items(Joi.string()).optional(),
       category: Joi.string().pattern(objectIdPattern).optional()
-
     });
 
     const { error } = schema.validate(req.body ,{ abortEarly:true});
@@ -107,6 +150,7 @@ const productController = {
       next(err);
     }
   },
+  
 };
 
 module.exports = productController;
