@@ -8,7 +8,6 @@ const orderController = {
   async placeOrder(req, res, next) {
     const userId = req.user._id; 
 
-    // Validate the request body for shipping address and payment method
     const schema = Joi.object({
       shippingAddress: Joi.object({
         address: Joi.string().required(),

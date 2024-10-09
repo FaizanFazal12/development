@@ -19,7 +19,7 @@ const auth = async (req, res, next) => {
     let _id;
 
     try{
-        _id = JWTService.verifyAccessToken(accessToken)._id;
+        _id = JWTService.verifyAccessToken(accessToken ,refreshToken)._id;
 
        
     }

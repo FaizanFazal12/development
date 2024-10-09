@@ -32,9 +32,13 @@ const jwtService = {
    * @param {String} token - The token to verify
    * @returns {Object|String} - The decoded payload if valid, otherwise throws an error
    */
-  verifyAccessToken: (token) => {
+  verifyAccessToken: (accessToken,refreshToken) => {
     try {
-      return jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+      let verifyToken= jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET);
+      if(verifyToken){
+        return verifyToken;
+      }
+      refreshAccessToken(refreshToken)
     } catch (error) {
       throw new Error('Access token is invalid or expired');
     }
